@@ -1,0 +1,40 @@
+Debugage:
+
+1) compil : ok
+2) reduire la complexité du pb
+    mpiexec -np 1 ./lpm:
+    address not mapped
+
+
+    mpiexec -np 1 xterm -e gdb ./lbm :
+    SISEGV 
+    #0  0x00005555555565d7 in setup_init_state_global_poiseuille_profile (mesh=0x7fffffffd550, mesh_type=0x7fffffffd580, mesh_comm=0x7fffffffd590)
+    at lbm_init.c:85
+    #1  0x00005555555568b8 in setup_init_state (mesh=0x7fffffffd550, mesh_type=0x7fffffffd580, mesh_comm=0x7fffffffd590) at lbm_init.c:155
+    #2  0x00005555555554c4 in main (argc=1, argv=0x7fffffffd7d8) at main.c:159
+
+    p Mesh_get_cell(mesh, i, j)
+	$2 = (double *) 0x0
+
+	p mesh->cells
+	$3 = 0x0
+	=>addr non alloué
+
+	le code est mis en commentaire dans lbm_struct.c --'
+
+	les resultats ont l'air bons
+3) augmenter le nombre de taches
+	mpiexec -np 2 ./lpm:
+	blocage a la derniere itérations
+
+	mpiexec -np 1 xterm -e gdb ./lbm   puis arret forcé pour voir ou ils en sont:
+		rank 0: dans une barriere dans close_file ou seul le processus de rank 0 accede
+		rank 1: dans le finalize
+
+		on enleve la barriere de la fonction et on la met dans le main pour que tout le monde passe dedans
+
+
+	mpiexec -np 3 ./lpm:
+		fonctionne mais pb avec le checksum
+	mpiexec -np 4 ./lpm:
+		ok
