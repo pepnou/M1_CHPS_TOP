@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
 	FILE * fp = NULL;
 	const char * config_filename = NULL;
 
-	//init MPI and get current rank and commuincator size.
+	//init MPI and get current rank and communicator size.
 	MPI_Init( &argc, &argv );
 	MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 	MPI_Comm_size( MPI_COMM_WORLD, &comm_size );
@@ -174,14 +174,14 @@ int main(int argc, char * argv[])
 		//compute special actions (border, obstacle...)
 		special_cells( &mesh, &mesh_type, &mesh_comm);
 
-		//need to wait all before doing next step
-		MPI_Barrier(MPI_COMM_WORLD);
+		//no need to wait all before doing next step
+		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//compute collision term
 		collision( &temp, &mesh);
 
 		//need to wait all before doing next step
-		MPI_Barrier(MPI_COMM_WORLD);
+		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//propagate values from node to neighboors
 		lbm_comm_ghost_exchange( &mesh_comm, &temp );

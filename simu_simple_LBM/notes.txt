@@ -38,3 +38,17 @@ Debugage:
 		fonctionne mais pb avec le checksum
 	mpiexec -np 4 ./lpm:
 		ok
+	On rajoute la verification width % nb_x = 0
+
+4) optimisation
+	la plupart des barrieres sont inutile
+
+	(lbm_comm.c)les communication des mailles fantomes sont atroces, on envoie les données 1 par 1, encore trop de barrieres
+	on regroupe ensembles les communications plutot que de faire des for envoyant une donnée a la fois
+	on met un place un systeme ou les rang impair envoi au rang pair puis l'inverse plutot que d avoir un systeme de communication dont le temps depend du nombre de processus
+	sauf pour les diagonales ou j ai la flemme de reflechir et ou on passe en comm asynchrone
+
+	y a deux fois l envoi du coin en bas a gauche --' + 2* la phase droite a gauche --'
+
+	//pas fait
+	A l'initialisation , on decoupera le travail de facon a ce que le nombre de maille fantome non contigues en mémoire soit inferieur a celui du nombre de maille fantomes contigues
