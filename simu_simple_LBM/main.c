@@ -164,6 +164,10 @@ int main(int argc, char * argv[])
 	//barrier to wait all before start
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	double t0 = MPI_Wtime(), t1;
+
+	double sc = 0.0, c = 0.0, ge = 0.0, p = 0.0, s = 0.0, g = t0;
+
 	//time steps
 	for ( i = 1 ; i < ITERATIONS ; i++ )
 	{
@@ -174,26 +178,58 @@ int main(int argc, char * argv[])
 		//compute special actions (border, obstacle...)
 		special_cells( &mesh, &mesh_type, &mesh_comm);
 
+		t1 = MPI_Wtime();
+		//printf("special_cells : %g\n", t1 - t0);
+		sc += t1 - t0;
+		t0 = t1;
+
 		//no need to wait all before doing next step
 		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//compute collision term
 		collision( &temp, &mesh);
 
+		t1 = MPI_Wtime();
+		//printf("collision : %g\n", t1 - t0);
+		c += t1 - t0;
+		t0 = t1;
+
 		//need to wait all before doing next step
 		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//propagate values from node to neighboors
 		lbm_comm_ghost_exchange( &mesh_comm, &temp );
+
+		t1 = MPI_Wtime();
+		//printf("lbm_comm_ghost_exchange : %g\n", t1 - t0);
+		ge += t1 - t0;
+		t0 = t1;
+
 		propagation( &mesh, &temp);
 
+		t1 = MPI_Wtime();
+		//printf("propagation : %g\n", t1 - t0);
+		p += t1 - t0;
+		t0 = t1;
+
 		//need to wait all before doing next step
-		MPI_Barrier(MPI_COMM_WORLD);
+		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//save step
 		if ( i % WRITE_STEP_INTERVAL == 0 && lbm_gbl_config.output_filename != NULL )
+		{
 			save_frame_all_domain(fp, &mesh, &temp_render );
+
+			t1 = MPI_Wtime();
+			//printf("save_frame_all_domain : %g\n", t1 - t0);
+			s += t1 - t0;
+			t0 = t1;
+		}
 	}
+
+	g = MPI_Wtime() - g;
+
+	printf("rank : %d\n\tspecial_cells           : %g%%\n\tcollision               : %g%%\n\tlbm_comm_ghost_exchange : %g%%\n\tpropagation             : %g%%\n\tsave_frame_all_domain   : %g%%\n", rank, sc/g*100, c/g*100, ge/g*100, p/g*100, s/g*100);
 
 	//wait all before closing
 	MPI_Barrier(MPI_COMM_WORLD);

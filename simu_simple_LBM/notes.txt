@@ -52,3 +52,5 @@ Debugage:
 
 	//pas fait
 	A l'initialisation , on decoupera le travail de facon a ce que le nombre de maille fantome non contigues en mémoire soit inferieur a celui du nombre de maille fantomes contigues
+
+	le flush inout est un sleep(1)

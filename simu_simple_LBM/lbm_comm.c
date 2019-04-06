@@ -268,6 +268,8 @@ void lbm_comm_sync_ghosts_vertical( lbm_comm_t * mesh, Mesh *mesh_to_process, lb
 /*******************  FUNCTION  *********************/
 void lbm_comm_ghost_exchange(lbm_comm_t * mesh, Mesh *mesh_to_process )
 {
+	double t0 = MPI_Wtime(), t1;
+
 	//vars
 	int rank;
 
@@ -301,6 +303,10 @@ void lbm_comm_ghost_exchange(lbm_comm_t * mesh, Mesh *mesh_to_process )
 		lbm_comm_sync_ghosts_horizontal(mesh,mesh_to_process,COMM_RECV,mesh->right_id,mesh->width - 1);
 		lbm_comm_sync_ghosts_horizontal(mesh,mesh_to_process,COMM_SEND,mesh->left_id,1);
 	}
+
+	//t1 = MPI_Wtime();
+	//printf("lbm_comm_sync_ghosts_horizontal : %g\n", t1 - t0);
+	//t0 = t1;
 	
 
 	//prevend comm mixing to avoid bugs
@@ -333,6 +339,10 @@ void lbm_comm_ghost_exchange(lbm_comm_t * mesh, Mesh *mesh_to_process )
 		lbm_comm_sync_ghosts_vertical(mesh,mesh_to_process,COMM_RECV,mesh->bottom_id,mesh->height - 1);
 		lbm_comm_sync_ghosts_vertical(mesh,mesh_to_process,COMM_SEND,mesh->top_id,1);
 	}
+
+	//t1 = MPI_Wtime();
+	//printf("lbm_comm_sync_ghosts_vertical : %g\n", t1 - t0);
+	//t0 = t1;
 
 	//prevend comm mixing to avoid bugs
 	//MPI_Barrier(MPI_COMM_WORLD);
@@ -372,8 +382,15 @@ void lbm_comm_ghost_exchange(lbm_comm_t * mesh, Mesh *mesh_to_process )
 	lbm_comm_sync_ghosts_diagonal(rqsts, &rqst_count, mesh,mesh_to_process,COMM_SEND,mesh->corner_id[CORNER_BOTTOM_RIGHT],mesh->width - 2,mesh->height - 2);
 	lbm_comm_sync_ghosts_diagonal(rqsts, &rqst_count, mesh,mesh_to_process,COMM_RECV,mesh->corner_id[CORNER_TOP_LEFT],0,0);
 
+	//t1 = MPI_Wtime();
+	//printf("lbm_comm_sync_ghosts_diagonal : %g\n", t1 - t0);
+	//t0 = t1;
 
 	MPI_Waitall(rqst_count, rqsts, MPI_STATUSES_IGNORE);
+
+	//t1 = MPI_Wtime();
+	//printf("MPI_Waitall : %g\n", t1 - t0);
+	//t0 = t1;
 
 	//prevend comm mixing to avoid bugs
 	//MPI_Barrier(MPI_COMM_WORLD);
@@ -383,7 +400,12 @@ void lbm_comm_ghost_exchange(lbm_comm_t * mesh, Mesh *mesh_to_process )
 	//lbm_comm_sync_ghosts_horizontal(mesh,mesh_to_process,COMM_RECV,mesh->right_id,mesh->width - 1);
 	
 	//wait for IO to finish, VERY important, do not remove.
-	FLUSH_INOUT();
+	//wow on rigole bcp trop ici --'
+	//FLUSH_INOUT();
+
+	//t1 = MPI_Wtime();
+	//printf("FLUSH_INOUT : %g\n", t1 - t0);
+	//t0 = t1;
 }
 
 /*******************  FUNCTION  *********************/
