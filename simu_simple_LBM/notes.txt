@@ -53,4 +53,12 @@ Debugage:
 	//pas fait
 	A l'initialisation , on decoupera le travail de facon a ce que le nombre de maille fantome non contigues en mémoire soit inferieur a celui du nombre de maille fantomes contigues
 
+
+	apres un petit ajout de profiling maison, on se rend compte que tout le temps est passé dans __FLUSH_INOUT__
 	le flush inout est un sleep(1)
+
+	
+	40% du temps total est passé dans collision
+	//meh
+	//on inverse les deux boucle afin que le parcours du tableau soit effectué de facon a un petit peu profiter du chargement par ligne de cache
+	 x * (9.0/2.0) => x * 4.5 dans compute_equilibrium_profile()

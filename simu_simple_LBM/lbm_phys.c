@@ -131,7 +131,7 @@ double compute_equilibrium_profile(Vector velocity,double density,int direction)
 	//terms without density and direction weight
 	feq = 1.0
 		+ (3.0 * p)
-		+ ((9.0 / 2.0) * p2)
+		+ (4.5 * p2)
 		- ((3.0 / 2.0) * v2);
 
 	//mult all by density and direction weight
