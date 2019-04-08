@@ -179,7 +179,6 @@ int main(int argc, char * argv[])
 		special_cells( &mesh, &mesh_type, &mesh_comm);
 
 		t1 = MPI_Wtime();
-		//printf("special_cells : %g\n", t1 - t0);
 		sc += t1 - t0;
 		t0 = t1;
 
@@ -201,14 +200,12 @@ int main(int argc, char * argv[])
 		lbm_comm_ghost_exchange( &mesh_comm, &temp );
 
 		t1 = MPI_Wtime();
-		//printf("lbm_comm_ghost_exchange : %g\n", t1 - t0);
 		ge += t1 - t0;
 		t0 = t1;
 
 		propagation( &mesh, &temp);
 
 		t1 = MPI_Wtime();
-		//printf("propagation : %g\n", t1 - t0);
 		p += t1 - t0;
 		t0 = t1;
 
@@ -221,7 +218,6 @@ int main(int argc, char * argv[])
 			save_frame_all_domain(fp, &mesh, &temp_render );
 
 			t1 = MPI_Wtime();
-			//printf("save_frame_all_domain : %g\n", t1 - t0);
 			s += t1 - t0;
 			t0 = t1;
 		}

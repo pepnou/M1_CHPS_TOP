@@ -340,7 +340,7 @@ void propagation(Mesh * mesh_out,const Mesh * mesh_in)
 		for ( i = 0 ; i < mesh_out->width; i++)
 		{
 			//for all direction
-			for ( k  = 1 ; k < DIRECTIONS ; k++)
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
 			{
 				//compute destination point
 				ii = (i + direction_matrix[k][0]);
@@ -348,6 +348,64 @@ void propagation(Mesh * mesh_out,const Mesh * mesh_in)
 				//propagate to neighboor nodes
 				if ((ii >= 0 && ii < mesh_out->width) && (jj >= 0 && jj < mesh_out->height))
 					Mesh_get_cell(mesh_out, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void my_special_cells(Mesh * mesh_out, Mesh * mesh_in, lbm_mesh_type_t * mesh_type, const lbm_comm_t * mesh_comm)
+{
+	//vars
+	int i,j;
+
+	//loop on all inner cells
+	for( i = 1 ; i < mesh_in->width - 1 ; i++ )
+	{
+		for( j = 1 ; j < mesh_in->height - 1 ; j++)
+		{
+			switch (*( lbm_cell_type_t_get_cell( mesh_type , i, j) ))
+			{
+				case CELL_FUILD:
+					break;
+				case CELL_BOUNCE_BACK:
+					compute_bounce_back(Mesh_get_cell(mesh_in, i, j));
+					break;
+				case CELL_LEFT_IN:
+					compute_inflow_zou_he_poiseuille_distr(mesh_in, Mesh_get_cell(mesh_in, i, j) ,j + mesh_comm->y);
+					break;
+				case CELL_RIGHT_OUT:
+					compute_outflow_zou_he_const_density(Mesh_get_cell(mesh_in, i, j));
+					break;
 			}
 		}
 	}
@@ -402,7 +460,7 @@ void my_propagation(Mesh * mesh_out,const Mesh * mesh_in)
 	for ( j = 0 ; j < mesh_out->height ; j++)
 	{
 		//for all direction
-		for ( k  = 1 ; k < DIRECTIONS ; k++)
+		for ( k  = 0 ; k < DIRECTIONS ; k++)
 		{
 			i = 0;
 
@@ -427,7 +485,7 @@ void my_propagation(Mesh * mesh_out,const Mesh * mesh_in)
 	for ( i = 0 ; i < mesh_out->width; i++)
 	{
 		//for all direction
-		for ( k  = 1 ; k < DIRECTIONS ; k++)
+		for ( k  = 0 ; k < DIRECTIONS ; k++)
 		{
 			j = 0;
 

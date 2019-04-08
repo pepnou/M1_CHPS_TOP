@@ -1,0 +1,7 @@
+.vscode
+*.o
+*.raw
+*.gif
+display
+config.txt
+lbm
