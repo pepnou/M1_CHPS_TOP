@@ -73,3 +73,7 @@ Debugage:
 	x * (9.0/2.0) => x * 4.5 dans compute_equilibrium_profile()
 
 	on rajoute le flag de compilation -O3
+
+	dans compute_outflow_zou_he_const_density
+		1.0/2.0 => 0.5
+		on peux enlever density car = 1

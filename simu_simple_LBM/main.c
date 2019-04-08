@@ -177,6 +177,7 @@ int main(int argc, char * argv[])
 
 		//compute special actions (border, obstacle...)
 		special_cells( &mesh, &mesh_type, &mesh_comm);
+		//my_special_cells( &temp, &mesh, &mesh_type, &mesh_comm);
 
 		t1 = MPI_Wtime();
 		sc += t1 - t0;
@@ -186,7 +187,7 @@ int main(int argc, char * argv[])
 		//MPI_Barrier(MPI_COMM_WORLD);
 
 		//compute collision term
-		collision( &temp, &mesh);
+		my_collision( &temp, &mesh);
 
 		t1 = MPI_Wtime();
 		//printf("collision : %g\n", t1 - t0);
@@ -203,11 +204,13 @@ int main(int argc, char * argv[])
 		ge += t1 - t0;
 		t0 = t1;
 
-		propagation( &mesh, &temp);
+		my_propagation( &mesh, &temp);
 
 		t1 = MPI_Wtime();
 		p += t1 - t0;
 		t0 = t1;
+
+		
 
 		//need to wait all before doing next step
 		//MPI_Barrier(MPI_COMM_WORLD);
@@ -225,7 +228,7 @@ int main(int argc, char * argv[])
 
 	g = MPI_Wtime() - g;
 
-	printf("rank : %d\n\tspecial_cells           : %g%%\n\tcollision               : %g%%\n\tlbm_comm_ghost_exchange : %g%%\n\tpropagation             : %g%%\n\tsave_frame_all_domain   : %g%%\n", rank, sc/g*100, c/g*100, ge/g*100, p/g*100, s/g*100);
+	printf("rank : %d\n\tspecial_cells           : %g%%\n\tcollision               : %g%%\n\tlbm_comm_ghost_exchange : %g%%\n\tpropagation             : %g%%\n\tsave_frame_all_domain   : %g%%\n\titer time               : %g\n", rank, sc/g*100, c/g*100, ge/g*100, p/g*100, s/g*100, (double)g / ITERATIONS);
 
 	//wait all before closing
 	MPI_Barrier(MPI_COMM_WORLD);
