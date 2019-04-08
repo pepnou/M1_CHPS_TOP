@@ -340,7 +340,7 @@ void propagation(Mesh * mesh_out,const Mesh * mesh_in)
 		for ( i = 0 ; i < mesh_out->width; i++)
 		{
 			//for all direction
-			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			for ( k  = 1 ; k < DIRECTIONS ; k++)
 			{
 				//compute destination point
 				ii = (i + direction_matrix[k][0]);
@@ -351,4 +351,122 @@ void propagation(Mesh * mesh_out,const Mesh * mesh_in)
 			}
 		}
 	}
+}
+
+/*******************  FUNCTION  *********************/
+/**
+ * Calcule le vecteur de collision entre les fluides de chacune des directions.
+**/
+void my_compute_cell_collision(Mesh * mesh_out,const lbm_mesh_cell_t cell_in, int i, int j)
+{
+	//vars
+	int k;
+	double density;
+	Vector v;
+	double feq;
+
+	int ii,jj;
+
+	//compute macroscopic values
+	density = get_cell_density(cell_in);
+	get_cell_velocity(v,cell_in,density);
+
+	//loop on microscopic directions
+	for( k = 0 ; k < DIRECTIONS ; k++)
+	{
+		//compute destination point
+		ii = (i + direction_matrix[k][0]);
+		jj = (j + direction_matrix[k][1]);
+
+		//compute f at equilibr.
+		feq = compute_equilibrium_profile(v,density,k);
+		//compute f out
+		Mesh_get_cell(mesh_out, ii, jj)[k] = cell_in[k] - RELAX_PARAMETER * (cell_in[k] - feq);
+		//cell_out[k] = cell_in[k] - RELAX_PARAMETER * (cell_in[k] - feq);
+	}
+}
+
+/*******************  FUNCTION  *********************/
+/**
+ * Propagation des densités vers les mailles voisines.
+ * @param mesh_out Maillage de sortie.
+ * @param mesh_in Maillage d'entrée (ne doivent pas être les mêmes).
+**/
+void my_propagation(Mesh * mesh_out,const Mesh * mesh_in)
+{
+	//vars
+	int i,j,k;
+	int ii,jj;
+
+	//loop on border cells
+	for ( j = 0 ; j < mesh_out->height ; j++)
+	{
+		//for all direction
+		for ( k  = 1 ; k < DIRECTIONS ; k++)
+		{
+			i = 0;
+
+			//compute destination point
+			ii = (i + direction_matrix[k][0]);
+			jj = (j + direction_matrix[k][1]);
+			//propagate to neighboor nodes
+			if ((ii >= 0 && ii < mesh_out->width) && (jj >= 0 && jj < mesh_out->height))
+				Mesh_get_cell(mesh_out, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+
+			
+			i = mesh_out->width - 1;
+
+			//compute destination point
+			ii = (i + direction_matrix[k][0]);
+			jj = (j + direction_matrix[k][1]);
+			//propagate to neighboor nodes
+			if ((ii >= 0 && ii < mesh_out->width) && (jj >= 0 && jj < mesh_out->height))
+				Mesh_get_cell(mesh_out, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+		}
+	}
+	for ( i = 0 ; i < mesh_out->width; i++)
+	{
+		//for all direction
+		for ( k  = 1 ; k < DIRECTIONS ; k++)
+		{
+			j = 0;
+
+			//compute destination point
+			ii = (i + direction_matrix[k][0]);
+			jj = (j + direction_matrix[k][1]);
+			//propagate to neighboor nodes
+			if ((ii >= 0 && ii < mesh_out->width) && (jj >= 0 && jj < mesh_out->height))
+				Mesh_get_cell(mesh_out, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+
+			
+			j = mesh_out->height - 1;
+
+			//compute destination point
+			ii = (i + direction_matrix[k][0]);
+			jj = (j + direction_matrix[k][1]);
+			//propagate to neighboor nodes
+			if ((ii >= 0 && ii < mesh_out->width) && (jj >= 0 && jj < mesh_out->height))
+				Mesh_get_cell(mesh_out, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+		}
+	}
+}
+
+/*******************  FUNCTION  *********************/
+/**
+ * Calcule les collisions sur chacune des cellules.
+ * @param mesh Maillage sur lequel appliquer le calcul.
+**/
+void my_collision(Mesh * mesh_out,const Mesh * mesh_in)
+{
+	//vars
+	int i,j;
+
+	//errors
+	assert(mesh_in->width == mesh_out->width);
+	assert(mesh_in->height == mesh_out->height);
+
+	//loop on all inner cells
+	for( j = 1 ; j < mesh_in->height - 1 ; j++)
+		for( i = 1 ; i < mesh_in->width - 1 ; i++ )
+			my_compute_cell_collision(mesh_out,Mesh_get_cell(mesh_in, i, j), i, j);
 }

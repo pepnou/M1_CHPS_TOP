@@ -57,8 +57,19 @@ Debugage:
 	apres un petit ajout de profiling maison, on se rend compte que tout le temps est passé dans __FLUSH_INOUT__
 	le flush inout est un sleep(1)
 
-	
-	40% du temps total est passé dans collision
-	//meh
-	//on inverse les deux boucle afin que le parcours du tableau soit effectué de facon a un petit peu profiter du chargement par ligne de cache
-	 x * (9.0/2.0) => x * 4.5 dans compute_equilibrium_profile()
+
+	write_interval = 1
+		35% du temps total est passé dans collision
+		30% dans la propagation
+		2% dans les communications
+		30% dans l'ecriture dans le fichier (avec chaque frame sauvegardé)
+
+	write_interval = 16
+		50% du temps total est passé dans collision
+		40% dans la propagation
+		8% dans les communications
+		1% dans l'ecriture dans le fichier (avec chaque frame sauvegardé)
+
+	x * (9.0/2.0) => x * 4.5 dans compute_equilibrium_profile()
+
+	on rajoute le flag de compilation -O3

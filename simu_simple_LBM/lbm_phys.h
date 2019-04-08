@@ -21,6 +21,7 @@ double helper_compute_poiseuille(int i,int size);
 //collistion
 double compute_equilibrium_profile(Vector velocity,double density,int direction);
 void compute_cell_collision(lbm_mesh_cell_t cell_out,const lbm_mesh_cell_t cell_in);
+void my_compute_cell_collision(Mesh *mesh_out,const lbm_mesh_cell_t cell_in, int i, int j);
 
 /*******************  FUNCTION  *********************/
 //limit conditions
@@ -32,6 +33,8 @@ void compute_outflow_zou_he_const_density(lbm_mesh_cell_t mesh);
 //main functions
 void special_cells(Mesh * mesh, lbm_mesh_type_t * mesh_type, const lbm_comm_t * mesh_comm);
 void collision(Mesh * mesh_out,const Mesh * mesh_in);
+void my_collision(Mesh * mesh_out,const Mesh * mesh_in);
 void propagation(Mesh * mesh_out,const Mesh * mesh_in);
+void my_propagation(Mesh * mesh_out,const Mesh * mesh_in);
 
 #endif

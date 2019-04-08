@@ -236,8 +236,6 @@ void lbm_comm_sync_ghosts_vertical( lbm_comm_t * mesh, Mesh *mesh_to_process, lb
 	if (target_rank == -1)
 		return;
 
-	printf("yolo\n");
-
 	switch (comm_type)
 	{
 		// case COMM_SEND:
