@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
 
 	g = MPI_Wtime() - g;
 
-	printf("rank : %d\n\tspecial_cells           : %g%%\n\tcollision               : %g%%\n\tlbm_comm_ghost_exchange : %g%%\n\tpropagation             : %g%%\n\tsave_frame_all_domain   : %g%%\n\titer time               : %g\n", rank, sc/g*100, c/g*100, ge/g*100, p/g*100, s/g*100, (double)g / ITERATIONS);
+	fprintf(stderr, "rank : %d\n\tspecial_cells           : %g%%\n\tcollision               : %g%%\n\tlbm_comm_ghost_exchange : %g%%\n\tpropagation             : %g%%\n\tsave_frame_all_domain   : %g%%\n\titer time               : %gs\n\ttotal time              : %gs\n", rank, sc/g*100, c/g*100, ge/g*100, p/g*100, s/g*100, (double)g / ITERATIONS, g);
 
 	//wait all before closing
 	MPI_Barrier(MPI_COMM_WORLD);
