@@ -555,63 +555,141 @@ void my_compute_cell_collision(Mesh * mesh_out,const lbm_mesh_cell_t cell_in, in
  * @param mesh_out Maillage de sortie.
  * @param mesh_in Maillage d'entrée (ne doivent pas être les mêmes).
 **/
-void my_propagation(Mesh * mesh_out,Mesh * mesh_in)
+void my_propagation(Mesh * mesh_out,Mesh * mesh_in, lbm_comm_t * mesh_comm)
 {
-	/*//vars
+	//vars
 	int i,j,k;
 	int ii,jj;
 
-	//loop on border cells
-	for ( j = 0 ; j < mesh_in->height ; j++)
+	if(mesh_comm->left_id == -1 && mesh_comm->right_id != -1)
 	{
-		//for all direction
-		for ( k  = 0 ; k < DIRECTIONS ; k++)
+		i = 0;
+		for ( j = 0 ; j < mesh_in->height ; j++)
 		{
-			i = 0;
-
-			//compute destination point
-			ii = (i + direction_matrix[k][0]);
-			jj = (j + direction_matrix[k][1]);
-			//propagate to neighboor nodes
-			if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
-				Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
-
-			
-			i = mesh_in->width - 1;
-
-			//compute destination point
-			ii = (i + direction_matrix[k][0]);
-			jj = (j + direction_matrix[k][1]);
-			//propagate to neighboor nodes
-			if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
-				Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			//for all direction
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+				jj = (j + direction_matrix[k][1]);
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
 		}
 	}
-	for ( i = 0 ; i < mesh_in->width; i++)
+	else if(mesh_comm->left_id != -1 && mesh_comm->right_id == -1)
 	{
-		//for all direction
-		for ( k  = 0 ; k < DIRECTIONS ; k++)
+		i = mesh_in->width - 1;
+		for ( j = 0 ; j < mesh_in->height ; j++)
 		{
-			j = 0;
-
-			//compute destination point
-			ii = (i + direction_matrix[k][0]);
-			jj = (j + direction_matrix[k][1]);
-			//propagate to neighboor nodes
-			if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
-				Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
-
-			
-			j = mesh_in->height - 1;
-
-			//compute destination point
-			ii = (i + direction_matrix[k][0]);
-			jj = (j + direction_matrix[k][1]);
-			//propagate to neighboor nodes
-			if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
-				Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			//for all direction
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+				jj = (j + direction_matrix[k][1]);
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
 		}
-	}*/
+	}
+	else if(mesh_comm->left_id == -1 && mesh_comm->right_id == -1)
+	{
+		for ( j = 0 ; j < mesh_in->height ; j++)
+		{
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				jj = (j + direction_matrix[k][1]);
+
+				i = 0;
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+				
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+
+				
+				i = mesh_in->width - 1;
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
+		}
+	}
+
+
+
+
+
+	if(mesh_comm->top_id == -1 && mesh_comm->bottom_id != -1)
+	{
+		j = 0;
+		for ( i = 0 ; i < mesh_in->width; i++)
+		{
+			//for all direction
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+				jj = (j + direction_matrix[k][1]);
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height) && mesh_comm->top_id == -1)
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
+		}
+	}
+	else if(mesh_comm->top_id != -1 && mesh_comm->bottom_id == -1)
+	{
+		j = mesh_in->height - 1;
+		for ( i = 0 ; i < mesh_in->width; i++)
+		{
+			//for all direction
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+				jj = (j + direction_matrix[k][1]);
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height) && mesh_comm->bottom_id == -1)
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
+		}
+	}
+	else if(mesh_comm->top_id == -1 && mesh_comm->bottom_id == -1)
+	{
+		for ( i = 0 ; i < mesh_in->width; i++)
+		{
+			//for all direction
+			for ( k  = 0 ; k < DIRECTIONS ; k++)
+			{
+				//compute destination point
+				ii = (i + direction_matrix[k][0]);
+
+				j = 0;
+				//compute destination point
+				jj = (j + direction_matrix[k][1]);
+
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height) && mesh_comm->top_id == -1)
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+
+				j = mesh_in->height - 1;
+				//compute destination point
+				jj = (j + direction_matrix[k][1]);
+
+				//propagate to neighboor nodes
+				if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height) && mesh_comm->bottom_id == -1)
+					Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
+			}
+		}
+	}
 
 	lbm_mesh_cell_t cell_swap = mesh_out->cells;
 	mesh_out->cells = mesh_in->cells;

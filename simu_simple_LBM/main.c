@@ -204,7 +204,7 @@ int main(int argc, char * argv[])
 		ge += t1 - t0;
 		t0 = t1;
 
-		my_propagation( &mesh, &temp);
+		my_propagation( &mesh, &temp, &mesh_comm);
 
 		t1 = MPI_Wtime();
 		p += t1 - t0;
