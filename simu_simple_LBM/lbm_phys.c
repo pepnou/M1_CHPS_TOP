@@ -557,7 +557,7 @@ void my_compute_cell_collision(Mesh * mesh_out,const lbm_mesh_cell_t cell_in, in
 **/
 void my_propagation(Mesh * mesh_out,Mesh * mesh_in)
 {
-	//vars
+	/*//vars
 	int i,j,k;
 	int ii,jj;
 
@@ -611,7 +611,7 @@ void my_propagation(Mesh * mesh_out,Mesh * mesh_in)
 			if ((ii >= 0 && ii < mesh_in->width) && (jj >= 0 && jj < mesh_in->height))
 				Mesh_get_cell(mesh_in, ii, jj)[k] = Mesh_get_cell(mesh_in, i, j)[k];
 		}
-	}
+	}*/
 
 	lbm_mesh_cell_t cell_swap = mesh_out->cells;
 	mesh_out->cells = mesh_in->cells;

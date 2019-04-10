@@ -54,6 +54,8 @@ typedef struct lbm_comm_t_s
 	/** Requète asynchrone en cours. **/
 	MPI_Request requests[32];
 	lbm_mesh_cell_t buffer;
+	/** MPI_Type specifique pour l'envoi des mailles fantomes **/
+	MPI_Datatype left, right, up, down;
 } lbm_comm_t;
 
 /*******************  FUNCTION  *********************/
