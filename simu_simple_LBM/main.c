@@ -122,7 +122,7 @@ int main(int argc, char * argv[])
 	Mesh temp_render;
 	lbm_mesh_type_t mesh_type;
 	lbm_comm_t mesh_comm;
-	int i, rank, comm_size;
+	int /*i, */rank, comm_size;
 	FILE * fp = NULL;
 	const char * config_filename = NULL;
 
@@ -168,61 +168,71 @@ int main(int argc, char * argv[])
 
 	double sc = 0.0, c = 0.0, ge = 0.0, p = 0.0, s = 0.0, g = t0;
 
-	//time steps
-	for ( i = 1 ; i < ITERATIONS ; i++ )
+	//#pragma omp parallel
 	{
-		//print progress
-		if( rank == RANK_MASTER )
-			printf("Progress [%5d / %5d]\n",i,ITERATIONS);
-
-		//compute special actions (border, obstacle...)
-		special_cells( &mesh, &mesh_type, &mesh_comm);
-		//my_special_cells( &temp, &mesh, &mesh_type, &mesh_comm);
-
-		t1 = MPI_Wtime();
-		sc += t1 - t0;
-		t0 = t1;
-
-		//no need to wait all before doing next step
-		//MPI_Barrier(MPI_COMM_WORLD);
-
-		//compute collision term
-		my_collision( &temp, &mesh);
-
-		t1 = MPI_Wtime();
-		//printf("collision : %g\n", t1 - t0);
-		c += t1 - t0;
-		t0 = t1;
-
-		//need to wait all before doing next step
-		//MPI_Barrier(MPI_COMM_WORLD);
-
-		//propagate values from node to neighboors
-		lbm_comm_ghost_exchange( &mesh_comm, &temp );
-
-		t1 = MPI_Wtime();
-		ge += t1 - t0;
-		t0 = t1;
-
-		my_propagation( &mesh, &temp, &mesh_comm);
-
-		t1 = MPI_Wtime();
-		p += t1 - t0;
-		t0 = t1;
-
-		
-
-		//need to wait all before doing next step
-		//MPI_Barrier(MPI_COMM_WORLD);
-
-		//save step
-		if ( i % WRITE_STEP_INTERVAL == 0 && lbm_gbl_config.output_filename != NULL )
+		//time steps
+		for (int i = 1 ; i < ITERATIONS ; i++ )
 		{
-			save_frame_all_domain(fp, &mesh, &temp_render );
+			//#pragma omp master
+			{
+				//print progress
+				if( rank == RANK_MASTER )
+					printf("Progress [%5d / %5d]\n",i,ITERATIONS);
 
-			t1 = MPI_Wtime();
-			s += t1 - t0;
-			t0 = t1;
+				//compute special actions (border, obstacle...)
+				special_cells( &mesh, &mesh_type, &mesh_comm);
+				//my_special_cells( &temp, &mesh, &mesh_type, &mesh_comm);
+
+				t1 = MPI_Wtime();
+				sc += t1 - t0;
+				t0 = t1;
+			}
+
+			//no need to wait all before doing next step
+			//MPI_Barrier(MPI_COMM_WORLD);
+
+			//compute collision term
+			my_collision( &temp, &mesh);
+
+			//#pragma omp master
+			{
+				t1 = MPI_Wtime();
+				//printf("collision : %g\n", t1 - t0);
+				c += t1 - t0;
+				t0 = t1;
+
+				//need to wait all before doing next step
+				//MPI_Barrier(MPI_COMM_WORLD);
+
+				//propagate values from node to neighboors
+				if(comm_size > 1)
+					lbm_comm_ghost_exchange( &mesh_comm, &temp );
+
+				t1 = MPI_Wtime();
+				ge += t1 - t0;
+				t0 = t1;
+
+				my_propagation( &mesh, &temp, &mesh_comm);
+
+				t1 = MPI_Wtime();
+				p += t1 - t0;
+				t0 = t1;
+
+				
+
+				//need to wait all before doing next step
+				//MPI_Barrier(MPI_COMM_WORLD);
+
+				//save step
+				if ( i % WRITE_STEP_INTERVAL == 0 && lbm_gbl_config.output_filename != NULL )
+				{
+					save_frame_all_domain(fp, &mesh, &temp_render );
+
+					t1 = MPI_Wtime();
+					s += t1 - t0;
+					t0 = t1;
+				}
+			}
 		}
 	}
 

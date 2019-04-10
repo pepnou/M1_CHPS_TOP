@@ -5,7 +5,7 @@ RM=rm -f
 MAKEDEPEND=makedepend
 
 #flags
-CFLAGS=-Wall -g -O3
+CFLAGS=-Wall -g -O3 -fopenmp
 LDFLAGS=-lm
 
 #Files

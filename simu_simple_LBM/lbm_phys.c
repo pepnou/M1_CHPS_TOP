@@ -1,6 +1,7 @@
 /********************  HEADERS  *********************/
 #include <assert.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "lbm_config.h"
 #include "lbm_struct.h"
 #include "lbm_phys.h"
@@ -694,7 +695,6 @@ void my_propagation(Mesh * mesh_out,Mesh * mesh_in, lbm_comm_t * mesh_comm)
 	lbm_mesh_cell_t cell_swap = mesh_out->cells;
 	mesh_out->cells = mesh_in->cells;
 	mesh_in->cells = cell_swap;
-
 }
 
 /*******************  FUNCTION  *********************/
@@ -704,15 +704,17 @@ void my_propagation(Mesh * mesh_out,Mesh * mesh_in, lbm_comm_t * mesh_comm)
 **/
 void my_collision(Mesh * mesh_out,const Mesh * mesh_in)
 {
-	//vars
-	int i,j;
-
 	//errors
 	assert(mesh_in->width == mesh_out->width);
 	assert(mesh_in->height == mesh_out->height);
 
+	//int chunck_size = (mesh_in->height - 2) / omp_get_num_threads();
+	int chunck_size = (mesh_in->height - 2) / omp_get_max_threads();
+
 	//loop on all inner cells
-	for( j = 1 ; j < mesh_in->height - 1 ; j++)
-		for( i = 1 ; i < mesh_in->width - 1 ; i++ )
+	//#pragma omp for schedule(static, chunck_size)
+	#pragma omp parallel for schedule(static, chunck_size)
+	for(int j = 1 ; j < mesh_in->height - 1 ; j++)
+		for(int i = 1 ; i < mesh_in->width - 1 ; i++ )
 			my_compute_cell_collision(mesh_out,Mesh_get_cell(mesh_in, i, j), i, j);
 }

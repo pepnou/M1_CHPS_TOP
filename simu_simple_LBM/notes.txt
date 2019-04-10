@@ -77,3 +77,17 @@ Debugage:
 	dans compute_outflow_zou_he_const_density
 		1.0/2.0 => 0.5
 		on peux enlever density car = 1
+
+	afin de limiter les parcours du tableau, on pourrai regrouper les fonction collision et propagation, il faudra cependant adapter les communications car celle ci se trouvent entre les deux étapes
+	
+	on obtient donc :
+		special_cells           : 2.81446%
+		collision               : 88.7194%
+		lbm_comm_ghost_exchange : 3.18513%
+		propagation             : 0.678999%
+		save_frame_all_domain   : 4.60199%
+		iter time               : 0.00498734s
+		total time              : 9.97468s
+
+	afin d'ameliorer les performance sur un noeud, on implemente openmp
+	on fera d'abord une premiere implementation avec omp parallel for autour de la boucle de collision 
