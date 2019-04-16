@@ -27,7 +27,7 @@ Debugage:
 	mpiexec -np 2 ./lpm:
 	blocage a la derniere itérations
 
-	mpiexec -np 1 xterm -e gdb ./lbm   puis arret forcé pour voir ou ils en sont:
+	mpiexec -np 2 xterm -e gdb ./lbm   puis arret forcé pour voir ou ils en sont:
 		rank 0: dans une barriere dans close_file ou seul le processus de rank 0 accede
 		rank 1: dans le finalize
 
@@ -78,7 +78,7 @@ Debugage:
 		1.0/2.0 => 0.5
 		on peux enlever density car = 1
 
-	afin de limiter les parcours du tableau, on pourrai regrouper les fonction collision et propagation, il faudra cependant adapter les communications car celle ci se trouvent entre les deux étapes
+	afin de limiter les parcours du tableau, on pourrai regrouper les fonction collision et propagation (ainsi que special cells plus tard), il faudra cependant adapter les communications car celle ci se trouvent entre les deux étapes
 	
 	on obtient donc :
 		special_cells           : 2.81446%
@@ -90,4 +90,21 @@ Debugage:
 		total time              : 9.97468s
 
 	afin d'ameliorer les performance sur un noeud, on implemente openmp
-	on fera d'abord une premiere implementation avec omp parallel for autour de la boucle de collision 
+	on fera d'abord une premiere implementation avec omp parallel for autour de la boucle de collision
+	on passe ensuite a une version ou la region parallele est ouverte avant la boucle des iteration et se termine après, il sera alors necessaire de rajouter des pragma omp master (ou single) sur les opérations autres que les collisions
+	//mouais oupa
+	après quelques tests, l'utilisation des hyperthreads a un impact sur les performances, cependant, openmp ne les utilise pas par default sur mon pc de test bien que la variable d'environnement OMP_NUM_THREADS ne soit pas 'set', il faudra lancer le programme avec la ligne suivante : OMP_NUM_THREADS=4 mpirun --map-by ppr:1:core ./lbm
+
+	dans les collision on mettra les boucle de facon a lire de facon contigue en mem
+
+	etant donné que nous devons optimiser un cas  a 2 dimensions et 9 direction (et uniquement ce cas la), il est possible de remplacer les boucle de calcul de densité (par exemple) par leur expression directe. on s'evite ainsi quelques opérations, on perd cependant en lisibilité du code
+
+
+	etat actuel:
+		special_cells           : 1.87674%
+		collision               : 77.8566%
+		lbm_comm_ghost_exchange : 6.65744%
+		propagation             : 1.67012%
+		save_frame_all_domain   : 11.9391%
+		iter time               : 0.00253s
+		total time              : 5.05999s

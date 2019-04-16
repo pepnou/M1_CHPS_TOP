@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdint.h>
+#include <omp.h>
 #include "lbm_config.h"
 #include "lbm_struct.h"
 #include "lbm_phys.h"
@@ -168,19 +169,20 @@ int main(int argc, char * argv[])
 
 	double sc = 0.0, c = 0.0, ge = 0.0, p = 0.0, s = 0.0, g = t0;
 
-	//#pragma omp parallel
+	#pragma omp parallel
 	{
+		printf("%d\n", omp_get_num_threads());
 		//time steps
 		for (int i = 1 ; i < ITERATIONS ; i++ )
 		{
-			//#pragma omp master
+			#pragma omp single
 			{
 				//print progress
 				if( rank == RANK_MASTER )
 					printf("Progress [%5d / %5d]\n",i,ITERATIONS);
 
 				//compute special actions (border, obstacle...)
-				special_cells( &mesh, &mesh_type, &mesh_comm);
+				//special_cells( &mesh, &mesh_type, &mesh_comm);
 				//my_special_cells( &temp, &mesh, &mesh_type, &mesh_comm);
 
 				t1 = MPI_Wtime();
@@ -188,21 +190,15 @@ int main(int argc, char * argv[])
 				t0 = t1;
 			}
 
-			//no need to wait all before doing next step
-			//MPI_Barrier(MPI_COMM_WORLD);
-
 			//compute collision term
-			my_collision( &temp, &mesh);
+			my_collision( &temp, &mesh, &mesh_type, &mesh_comm);
 
-			//#pragma omp master
+			#pragma omp single
 			{
 				t1 = MPI_Wtime();
 				//printf("collision : %g\n", t1 - t0);
 				c += t1 - t0;
 				t0 = t1;
-
-				//need to wait all before doing next step
-				//MPI_Barrier(MPI_COMM_WORLD);
 
 				//propagate values from node to neighboors
 				if(comm_size > 1)
