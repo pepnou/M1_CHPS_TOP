@@ -175,7 +175,7 @@ int main(int argc, char * argv[])
 		//time steps
 		for (int i = 1 ; i < ITERATIONS ; i++ )
 		{
-			#pragma omp single
+			#pragma omp master
 			{
 				//print progress
 				if( rank == RANK_MASTER )
@@ -185,14 +185,15 @@ int main(int argc, char * argv[])
 				//special_cells( &mesh, &mesh_type, &mesh_comm);
 				//my_special_cells( &temp, &mesh, &mesh_type, &mesh_comm);
 
-				t1 = MPI_Wtime();
-				sc += t1 - t0;
-				t0 = t1;
+				//t1 = MPI_Wtime();
+				//sc += t1 - t0;
+				//t0 = t1;
 			}
 
 			//compute collision term
 			my_collision( &temp, &mesh, &mesh_type, &mesh_comm);
 
+			#pragma omp barrier
 			#pragma omp single
 			{
 				t1 = MPI_Wtime();
